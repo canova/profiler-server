@@ -20,6 +20,13 @@ module.exports = {
     sourceType: 'module',
   },
   plugins: ['@babel', 'flowtype', 'import', 'prettier'],
+  settings: {
+    'import/resolver': {
+      node: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      },
+    },
+  },
   rules: {
     // Plugin rules:
     'import/no-duplicates': 'error',
@@ -83,4 +90,20 @@ module.exports = {
     'prefer-spread': 'error',
     'no-else-return': 'error',
   },
+  overrides: [
+    {
+      // TypeScript linting
+      files: ['src/**/**/*.{ts,tsx}'],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+        project: ['./tsconfig.json'],
+      },
+      plugins: ['@typescript-eslint'],
+      extends: [
+        'plugin:@typescript-eslint/recommended',
+        // 'plugin:@typescript-eslint/recommended-requiring-type-checking',
+      ],
+    },
+  ],
 };
