@@ -102,6 +102,7 @@ module.exports = {
       plugins: ['@typescript-eslint'],
       extends: [
         'plugin:@typescript-eslint/recommended',
+        // FIXME: Issue #xxxx
         // 'plugin:@typescript-eslint/recommended-requiring-type-checking',
       ],
       rules: {
@@ -109,7 +110,7 @@ module.exports = {
           'error',
           { argsIgnorePattern: '^_' },
         ],
-        '@typescript-eslint/no-var-requires': 'off',
+        // FIXME: Issue #xxxx
         '@typescript-eslint/no-explicit-any': 'off',
       },
     },

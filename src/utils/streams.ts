@@ -221,7 +221,7 @@ export class GunzipWrapper extends Transform {
 
   _transform(
     chunk: string | Buffer,
-    encoding: string,
+    encoding: BufferEncoding,
     callback: (error?: Error) => unknown
   ) {
     const shouldWriteMore = this.gunzipStream.write(chunk, encoding);
