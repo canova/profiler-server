@@ -22,7 +22,9 @@ describe('dockerflow endpoints', () => {
 
   function setupForHeartbeat({
     failBitly,
-  }: $Shape<{| +failBitly: boolean |}> = {}) {
+  }: Partial<{
+    failBitly: boolean;
+  }> = {}) {
     let nockScope = nock(BITLY_HOSTNAME, {
       reqheaders: { authorization: `Bearer ${config.bitlyToken}` },
     }).get('/v4/user');
@@ -114,7 +116,7 @@ describe('dockerflow endpoints', () => {
   describe('__version__', () => {
     it('answers to the version endpoint when the file is absent', async () => {
       const error = new Error("Can't find the requested file.");
-      (error: any).code = 'ENOENT';
+      (error as any).code = 'ENOENT';
 
       jest.spyOn(fs.promises, 'stat').mockRejectedValue(error);
       jest.spyOn(fs.promises, 'readFile').mockRejectedValue(error);
@@ -136,6 +138,7 @@ describe('dockerflow endpoints', () => {
       jest.spyOn(fs.promises, 'readFile').mockResolvedValue(fixture);
       jest
         .spyOn(fs.promises, 'stat')
+        // @ts-expect-error Other fields are not included for this test.
         .mockResolvedValue({ mtime: fakeLastModifiedDate });
       const agent = setup();
       const response = await agent
@@ -152,6 +155,7 @@ describe('dockerflow endpoints', () => {
   it('all endpoints uses security headers', async () => {
     const fixture = require('./fixtures/version.json');
     jest.spyOn(fs.promises, 'readFile').mockResolvedValue(fixture);
+    // @ts-expect-error Other fields are not included for this test.
     jest.spyOn(fs.promises, 'stat').mockResolvedValue({ mtime: new Date() });
 
     const { agent } = setupForHeartbeat();
