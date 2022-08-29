@@ -72,8 +72,8 @@ describe('dockerflow endpoints', () => {
     });
 
     it('answers an error to the heartbeat if the bucket does not exist', async () => {
-      jest
-        .spyOn(Bucket.prototype, 'exists')
+      Bucket.prototype.exists = jest
+        .fn()
         .mockReturnValue(Promise.resolve([false]));
       jest
         .spyOn(process.stdout, 'write')
