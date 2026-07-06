@@ -63,7 +63,7 @@ export function publishRoutes() {
     const profileToken = await generateTokenForProfile();
 
     const lengthChecker = new LengthCheckerPassThrough(MAX_BODY_LENGTH);
-    // The payload should "look like" a json object.
+    // The payload should "look like" a JSON object or a JSLB file.
     const contentChecker = new CheapContentChecker();
     const gunzipStream = new GunzipWrapper();
 
@@ -91,9 +91,9 @@ export function publishRoutes() {
     // 1. First and main pipeline
     const pipelinePromise = pipeline(lengthChecker, googleStorageStream);
 
-    // 2. "Gunzip and check" json pipeline
-    // This pipeline will stop quite early, once we know this looks like a json.
-    // When it ends we'll just unpipe.
+    // 2. "Gunzip and check" content pipeline
+    // This pipeline will stop quite early, once we know this looks like a
+    // JSON object or JSLB file. When it ends we'll just unpipe.
     // We don't use the `pipeline` utility because with it we get some
     // "premature close" errors when the length checker errors out.
     lengthChecker.pipe(gunzipStream);
@@ -103,8 +103,8 @@ export function publishRoutes() {
       .once(contentChecker, 'profiler:checkEnded')
       .then(() => {
         log.verbose(
-          'json-checker-pipeline-done',
-          'The stream pipeline to check the json content is finished.'
+          'content-checker-pipeline-done',
+          'The stream pipeline to check the content is finished.'
         );
 
         gunzipStream.unpipe(contentChecker);
