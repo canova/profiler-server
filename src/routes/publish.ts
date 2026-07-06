@@ -17,7 +17,7 @@ import { create as gcsStorageCreate } from '../logic/gcs';
 import * as Jwt from '../logic/jwt';
 import {
   LengthCheckerPassThrough,
-  CheapJsonChecker,
+  CheapContentChecker,
   forwardErrors,
   GunzipWrapper,
 } from '../utils/streams';
@@ -64,7 +64,7 @@ export function publishRoutes() {
 
     const lengthChecker = new LengthCheckerPassThrough(MAX_BODY_LENGTH);
     // The payload should "look like" a json object.
-    const jsonChecker = new CheapJsonChecker();
+    const contentChecker = new CheapContentChecker();
     const gunzipStream = new GunzipWrapper();
 
     const storage = gcsStorageCreate(config);
@@ -80,7 +80,7 @@ export function publishRoutes() {
     //
     //       request
     //          |
-    //    lengthChecker --- gunzipStream --- jsonChecker
+    //    lengthChecker --- gunzipStream --- contentChecker
     //          |
     // googleStorageStream
     //
@@ -97,19 +97,19 @@ export function publishRoutes() {
     // We don't use the `pipeline` utility because with it we get some
     // "premature close" errors when the length checker errors out.
     lengthChecker.pipe(gunzipStream);
-    gunzipStream.pipe(jsonChecker);
+    gunzipStream.pipe(contentChecker);
 
-    const jsonCheckerPromise = events
-      .once(jsonChecker, 'profiler:checkEnded')
+    const contentCheckerPromise = events
+      .once(contentChecker, 'profiler:checkEnded')
       .then(() => {
         log.verbose(
           'json-checker-pipeline-done',
           'The stream pipeline to check the json content is finished.'
         );
 
-        gunzipStream.unpipe(jsonChecker);
+        gunzipStream.unpipe(contentChecker);
         lengthChecker.unpipe(gunzipStream);
-        jsonChecker.destroy();
+        contentChecker.destroy();
         gunzipStream.destroy();
       });
 
@@ -118,7 +118,7 @@ export function publishRoutes() {
     // that the main pipeline is interrupted too.
     // Note that errors inside the first pipeline are forwarded thanks to the
     // `pipeline` thingie.
-    forwardErrors(lengthChecker, gunzipStream, jsonChecker);
+    forwardErrors(lengthChecker, gunzipStream, contentChecker);
 
     // The HTTP Request is piped directly to the first stream in the pipeline.
     // We do no error handling here: simply if there's an error (either expected
@@ -129,7 +129,7 @@ export function publishRoutes() {
     // We still wait for the end of both pipelines before moving forward.
     // If there's an error (either expected or unexpected) it will bubble up to
     // Koa which will expose it appropriately to the caller.
-    await Promise.all([pipelinePromise, jsonCheckerPromise]);
+    await Promise.all([pipelinePromise, contentCheckerPromise]);
 
     const jwtToken = Jwt.generateToken({ profileToken });
 

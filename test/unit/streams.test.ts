@@ -9,7 +9,7 @@ import { once } from 'events';
 
 import {
   Concatenator,
-  CheapJsonChecker,
+  CheapContentChecker,
   GunzipWrapper,
 } from '../../src/utils/streams';
 
@@ -19,10 +19,10 @@ const pipeline = util.promisify(Stream.pipeline);
 const nextTick = util.promisify(process.nextTick);
 const END_EVENT_NAME = 'profiler:checkEnded';
 
-describe('CheapJsonChecker', () => {
+describe('CheapContentChecker', () => {
   it('accepts normal content', async () => {
     const fixture = '{ "foo": "bar" }';
-    const checker = new CheapJsonChecker();
+    const checker = new CheapContentChecker();
     const input = new PassThrough();
     const endPromise = once(checker, END_EVENT_NAME);
     input.write(fixture.slice(0, 3));
@@ -33,7 +33,7 @@ describe('CheapJsonChecker', () => {
 
   it('accepts content with some space at the start', async () => {
     const fixture = '                               { "foo": "bar" }';
-    const checker = new CheapJsonChecker();
+    const checker = new CheapContentChecker();
     const input = new PassThrough();
     const endPromise = once(checker, END_EVENT_NAME);
     input.write(fixture.slice(0, 3));
@@ -44,7 +44,7 @@ describe('CheapJsonChecker', () => {
 
   it(`rejects if there's only space in the content`, async () => {
     const fixture = '                           ';
-    const checker = new CheapJsonChecker();
+    const checker = new CheapContentChecker();
     const input = new PassThrough();
     const endPromise = once(checker, END_EVENT_NAME);
     input.write(fixture);
@@ -57,7 +57,7 @@ describe('CheapJsonChecker', () => {
 
   it('rejects if required content is missing', async () => {
     const fixture = 'bad content';
-    const checker = new CheapJsonChecker();
+    const checker = new CheapContentChecker();
     const endPromise = once(checker, END_EVENT_NAME);
     const input = new PassThrough();
     input.write(fixture);
@@ -71,7 +71,7 @@ describe('CheapJsonChecker', () => {
 
   it('supports unicode characters too', async () => {
     const fixture = '{ "éàçâ": "bar" }';
-    const checker = new CheapJsonChecker();
+    const checker = new CheapContentChecker();
     const input = new PassThrough();
     const endPromise = once(checker, END_EVENT_NAME);
     input.write(fixture.slice(0, 3)); // This should cut in the middle of a unicode character
@@ -82,7 +82,7 @@ describe('CheapJsonChecker', () => {
 
   it('supports long-running operations', async () => {
     const fixture = '{ "foo": "bar" }';
-    const checker = new CheapJsonChecker();
+    const checker = new CheapContentChecker();
     const input = new PassThrough();
     const endPromise = once(checker, END_EVENT_NAME);
     const pipelinePromise = pipeline(input, checker);

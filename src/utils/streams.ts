@@ -112,8 +112,8 @@ export class Concatenator extends Writable {
 }
 
 // This Transform cheaply checks that a gzipped stream looks like a json.
-export class CheapJsonChecker extends Writable {
-  log: Logger = getLogger('CheapJsonChecker');
+export class CheapContentChecker extends Writable {
+  log: Logger = getLogger('CheapContentChecker');
   stringDecoder = new StringDecoder('utf8');
   // We allow either only spaces, or only spaces followed by a bracket, or just a bracket.
   onlySpacesRe = /^\s+$/;
