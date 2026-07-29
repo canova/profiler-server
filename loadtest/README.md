@@ -168,9 +168,8 @@ access the host from the container.
 
 ## Appendix
 
-To delete all objects in Google Storage Bucket, here is the useful command:
+To delete all objects in a Google Storage Bucket, here is the useful command:
 
 ```
-gsutil -m rm gs://<bucket-name>/*
-``
+gcloud storage rm 'gs://<bucket-name>/**'
 ```
